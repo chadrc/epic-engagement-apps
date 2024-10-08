@@ -1,7 +1,7 @@
 package com.yulepanda.wargamebuilder
 
 class Datasheet {
-    var name = ""
+    var name = "New Datasheet"
     var skill = 0
     var health = 0
     var speed = 0
