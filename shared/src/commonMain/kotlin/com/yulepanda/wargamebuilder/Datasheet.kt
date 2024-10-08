@@ -8,6 +8,7 @@ class Datasheet {
     var composition: Array<ModelGroup> = arrayOf(ModelGroup() )
     var abilities: Array<UnitAbility> = emptyArray()
     var statTable: RollTable = RollTable()
+    var tags: Array<String> = emptyArray()
 }
 
 class UnitAbility {
