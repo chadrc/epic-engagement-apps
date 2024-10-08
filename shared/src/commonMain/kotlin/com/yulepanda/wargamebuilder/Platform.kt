@@ -5,3 +5,5 @@ interface Platform {
 }
 
 expect fun getPlatform(): Platform
+
+expect fun platformSaveDatasheet(fileName: String, datasheet: Datasheet)

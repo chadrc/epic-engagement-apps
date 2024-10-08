@@ -1,5 +1,8 @@
 package com.yulepanda.wargamebuilder
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 class Datasheet {
     var name = "New Datasheet"
     var skill = 0
@@ -11,16 +14,19 @@ class Datasheet {
     var tags: Array<String> = emptyArray()
 }
 
+@Serializable
 class UnitAbility {
     var name = ""
     var description: String? = null
 }
 
+@Serializable
 class ModelGroup {
     var name = "Model Name"
     var count = 0
 }
 
+@Serializable
 class RollTable {
     var resultBreaks: Array<Int> = arrayOf(1)
     var toSave: Array<Int> = arrayOf(4)
@@ -29,6 +35,7 @@ class RollTable {
     var weapons: Array<WeaponTable> = arrayOf(WeaponTable())
 }
 
+@Serializable
 class WeaponTable {
     var name = ""
     var attacks: Array<Int> = arrayOf(1)

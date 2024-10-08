@@ -1,10 +1,12 @@
 package com.yulepanda.wargamebuilder
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -14,14 +16,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
-fun App(state: AppState) {
+fun App(model: AppViewModel = AppViewModel()) {
     MaterialTheme(
         colorScheme = darkColorScheme(
         )
@@ -44,6 +47,8 @@ fun App(state: AppState) {
 
 //        var sheets by remember { mutableStateListOf(Datasheet()) }
 
+        val state by model.uiState.collectAsState()
+
         val selectedSheet = if (state.selectedSheet < state.datasheets.size) {
             state.datasheets[state.selectedSheet]
         } else {
@@ -53,14 +58,11 @@ fun App(state: AppState) {
         Scaffold {
             Row(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth()
-//                .background(Color(0, 0, 0))
+                    .fillMaxSize()
             ) {
                 Column(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surfaceContainer)
-//                    .background(Color(255, 0, 0))
                         .fillMaxHeight()
                         .fillMaxWidth(.25f)
                 ) {
@@ -68,17 +70,24 @@ fun App(state: AppState) {
                     // center panel
                     Box(
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth()
+                            .fillMaxSize()
                             .padding(5.dp)
                     ) {
-                        Column {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
                             // sheet options
-                            Button(
-                                shape = ButtonDefaults.shape,
-                                onClick = {}
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
                             ) {
-                                Text("New Sheet")
+                                Button(
+                                    shape = ButtonDefaults.shape,
+                                    onClick = { model.addNewSheet() },
+                                ) {
+                                    Text("New Sheet")
+                                }
                             }
 
                             for (sheet in state.datasheets) {
@@ -90,16 +99,13 @@ fun App(state: AppState) {
 
                 Column(
                     modifier = Modifier
-//                    .background(Color(0, 255, 0))
                         .fillMaxHeight()
                         .fillMaxWidth(.67f)
                 ) {
                     // center panel
                     Box(
                         modifier = Modifier
-//                        .background(Color(0, 150, 0))
-                            .fillMaxHeight()
-                            .fillMaxWidth()
+                            .fillMaxSize()
                             .padding(5.dp)
                     ) {
                         if (selectedSheet == null) {
@@ -114,15 +120,12 @@ fun App(state: AppState) {
                 Column(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surfaceContainer)
-//                    .background(Color(0, 0, 255))
-                        .fillMaxHeight()
-                        .fillMaxWidth()
+                        .fillMaxSize()
                 ) {
                     // center panel
                     Box(
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth()
+                            .fillMaxSize()
                             .padding(5.dp)
                     ) {
                         // sheet preview
