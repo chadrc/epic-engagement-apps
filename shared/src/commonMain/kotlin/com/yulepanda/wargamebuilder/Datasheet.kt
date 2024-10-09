@@ -8,7 +8,7 @@ data class Datasheet(
     var skill: Int = 0,
     var health: Int = 0,
     var speed: Int = 0,
-    var composition: Array<ModelGroup> = arrayOf(ModelGroup() ),
+    var composition: Array<ModelGroup> = arrayOf(ModelGroup()),
     var abilities: Array<UnitAbility> = emptyArray(),
     var statTable: RollTable = RollTable(),
     var tags: Array<String> = emptyArray()
@@ -22,7 +22,7 @@ data class UnitAbility(
 
 @Serializable
 data class ModelGroup(
-    var name:String = "Model Name",
+    var name: String = "Model Name",
     var count: Int = 0
 )
 
@@ -37,7 +37,7 @@ data class RollTable(
 )
 
 @Serializable
-data class WeaponTable (
+data class WeaponTable(
     var name: String = "New Weapon",
     var attacks: Array<Int> = arrayOf(1),
     var range: Array<Int> = arrayOf(3),

@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
@@ -30,9 +32,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -165,16 +169,9 @@ fun App(model: AppViewModel = AppViewModel()) {
     model.loadAllSheets()
 }
 
-fun parseChangedInt(change: String): Int? {
-    return if (change.isBlank()) {
-        0
-    } else {
-        change.toIntOrNull()
-    }
-}
-
 @Composable
 fun EditSheet(model: AppViewModel, sheet: Datasheet) {
+    println("render edit sheet")
     TextField(
         sheet.name,
         singleLine = true,
@@ -254,11 +251,24 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                StatTableRow(result.toString(), MaterialTheme.colorScheme.onPrimary)
-                StatTableRow(toSave.toString(), MaterialTheme.colorScheme.onSecondary)
-                StatTableRow(toResist?.toString() ?: "", MaterialTheme.colorScheme.secondaryContainer)
-                StatTableRow(hardness?.toString() ?: "", MaterialTheme.colorScheme.onSecondary)
-                StatTableRow(enhancements.orEmpty(), MaterialTheme.colorScheme.secondaryContainer)
+                StatTableRow(result.toString(), MaterialTheme.colorScheme.onPrimary) {
+                    commitChangedInt(it) { num -> model.setResultBreak(num, i) }
+                }
+                StatTableRow(toSave.toString(), MaterialTheme.colorScheme.onSecondary) {
+                    commitChangedInt(it) { num -> model.setToSave(num, i) }
+                }
+                StatTableRow(
+                    toResist?.toString() ?: "",
+                    MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    commitChangedInt(it) { num -> model.setToResist(num, i) }
+                }
+                StatTableRow(hardness?.toString() ?: "", MaterialTheme.colorScheme.onSecondary) {
+                    commitChangedInt(it) { num -> model.setHardness(num, i)}
+                }
+                StatTableRow(enhancements.orEmpty(), MaterialTheme.colorScheme.secondaryContainer) {
+                    model.setEnhancements(it, i)
+                }
 
                 for (w in IntRange(0, sheet.statTable.weapons.size - 1)) {
                     val weapon = sheet.statTable.weapons[w]
@@ -268,12 +278,25 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
                     val damage = weapon.damage[i]
                     val weaponEnhancements = weapon.enhancements?.get(i)
 
-                    StatTableRow("", MaterialTheme.colorScheme.primaryContainer)
-                    StatTableRow(attacks.toString(), MaterialTheme.colorScheme.secondaryContainer)
-                    StatTableRow(range.toString(), MaterialTheme.colorScheme.onSecondary)
-                    StatTableRow(toHit.toString(), MaterialTheme.colorScheme.secondaryContainer)
-                    StatTableRow(damage.toString(), MaterialTheme.colorScheme.onSecondary)
-                    StatTableRow(weaponEnhancements.orEmpty(), MaterialTheme.colorScheme.secondaryContainer)
+                    EmptyTableRow(MaterialTheme.colorScheme.primaryContainer)
+                    StatTableRow(attacks.toString(), MaterialTheme.colorScheme.secondaryContainer){
+                        commitChangedInt(it) { num -> model.setAttacks(num, i, w)}
+                    }
+                    StatTableRow(range.toString(), MaterialTheme.colorScheme.onSecondary){
+                        commitChangedInt(it) { num -> model.setRange(num, i, w)}
+                    }
+                    StatTableRow(toHit.toString(), MaterialTheme.colorScheme.secondaryContainer){
+                        commitChangedInt(it) { num -> model.setToHit(num, i, w)}
+                    }
+                    StatTableRow(damage.toString(), MaterialTheme.colorScheme.onSecondary){
+                        commitChangedInt(it) { num -> model.setDamage(num, i, w)}
+                    }
+                    StatTableRow(
+                        weaponEnhancements.orEmpty(),
+                        MaterialTheme.colorScheme.secondaryContainer
+                    ){
+                        model.setWeaponEnhancements(it, i, w)
+                    }
                 }
             }
         }
@@ -286,18 +309,61 @@ fun StatTableHeaderRow(text: String, color: Color) {
         modifier = Modifier
             .background(color)
             .fillMaxWidth()
+            .height(32.dp)
             .padding(6.dp, 3.dp)
     ) { Text(text) }
 }
 
 @Composable
-fun StatTableRow(text: String, color: Color) {
+fun EmptyTableRow(color: Color,) {
     Row(
         modifier = Modifier
             .background(color)
             .fillMaxWidth()
+            .height(32.dp)
             .padding(6.dp, 3.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
-    ) { Text(text) }
+    ) {}
+}
+
+@Composable
+fun StatTableRow(
+    text: String,
+    color: Color,
+    onValueChange: (String) -> Unit = {},
+) {
+    Row(
+        modifier = Modifier
+            .background(color)
+            .fillMaxWidth()
+            .height(32.dp)
+            .padding(6.dp, 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        BasicTextField(
+            text,
+            singleLine = true,
+            textStyle = TextStyle(
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            onValueChange = onValueChange,
+        )
+    }
+}
+
+fun commitChangedInt(change: String, commit: (Int) -> Unit) {
+    commit(parseChangedInt(change) ?: return)
+}
+
+fun parseChangedInt(change: String): Int? {
+    return if (change.isBlank()) {
+        0
+    } else {
+        change.toIntOrNull()
+    }
 }

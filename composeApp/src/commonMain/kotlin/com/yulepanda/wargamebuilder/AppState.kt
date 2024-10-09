@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import org.jetbrains.skia.Data
 
 data class AppState(
     val datasheets: List<Datasheet> = listOf(Datasheet()),
@@ -142,20 +141,120 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    fun setResultBreak(value: Int, index: Int) {
+        editSheetValue {
+            it.statTable.resultBreaks[index] = value
+        }
+    }
+
+    fun setToSave(value: Int, index: Int) {
+        editSheetValue {
+            it.statTable.toSave[index] = value
+        }
+    }
+
+    fun setToResist(value: Int, index: Int) {
+        editSheetValue {
+            val resist = it.statTable.toResist
+            if (resist == null) {
+                it.statTable.toResist = arrayOf(value)
+            } else {
+                resist[index] = value
+            }
+        }
+    }
+
+    fun setHardness(value: Int, index: Int) {
+        editSheetValue {
+            val hardness = it.statTable.hardness
+            if (hardness == null) {
+                it.statTable.hardness = arrayOf(value)
+            } else {
+                hardness[index] = value
+            }
+        }
+    }
+
+    fun setEnhancements(value: String, index: Int) {
+        editSheetValue {
+            val enhancements = it.statTable.enhancements
+            if (enhancements == null) {
+                it.statTable.enhancements = arrayOf(value)
+            } else {
+                enhancements[index] = value
+            }
+        }
+    }
+
+    fun setAttacks(value: Int, index: Int, weaponIndex: Int) {
+        editSheetValue {
+            it.statTable.weapons[weaponIndex].attacks[index] = value
+        }
+    }
+
+    fun setRange(value: Int, index: Int, weaponIndex: Int) {
+        editSheetValue {
+            it.statTable.weapons[weaponIndex].range[index] = value
+        }
+    }
+
+    fun setToHit(value: Int, index: Int, weaponIndex: Int) {
+        editSheetValue {
+            it.statTable.weapons[weaponIndex].toHit[index] = value
+        }
+    }
+
+    fun setDamage(value: Int, index: Int, weaponIndex: Int) {
+        editSheetValue {
+            it.statTable.weapons[weaponIndex].damage[index] = value
+        }
+    }
+
+    fun setWeaponEnhancements(value: String, index: Int, weaponIndex: Int) {
+        editSheetValue {
+            val list = it.statTable.weapons[weaponIndex].enhancements
+            if (list == null) {
+                it.statTable.weapons[weaponIndex].enhancements = arrayOf(value)
+            } else {
+                list[index] = value
+            }
+        }
+    }
+
     private fun editSheetValue(editFunc: (Datasheet) -> Unit) {
         _uiState.update { state ->
             val edits = state.sheetEdits.toMutableMap()
             val selectedSheet = state.datasheets[state.selectedSheet]
-            val editSheet = edits[selectedSheet.name]?.second?.copy()
+            val newSheet = edits[selectedSheet.name]?.second ?: return
 
-            if (editSheet != null) {
-                editFunc(editSheet)
-                edits[selectedSheet.name] = Pair(true, editSheet)
-            } else {
-                // error, show?
-            }
+            val editSheet = cloneDatasheet(newSheet)
+
+            editFunc(editSheet)
+            edits[selectedSheet.name] = Pair(true, editSheet)
 
             state.copy(sheetEdits = edits)
         }
+    }
+
+    private fun cloneDatasheet(datasheet: Datasheet): Datasheet {
+        return datasheet.copy(
+            composition = datasheet.composition.map { it.copy() }.toTypedArray(),
+            abilities = datasheet.abilities.map { it.copy() }.toTypedArray(),
+            statTable = datasheet.statTable.copy(
+                datasheet.statTable.resultBreaks.copyOf(),
+                datasheet.statTable.toSave.copyOf(),
+                datasheet.statTable.toResist?.copyOf(),
+                datasheet.statTable.hardness?.copyOf(),
+                datasheet.statTable.enhancements?.copyOf(),
+                datasheet.statTable.weapons.map { it.copy(
+                    attacks = it.attacks.copyOf(),
+                    range = it.range.copyOf(),
+                    toHit = it.toHit.copyOf(),
+                    damage = it.damage.copyOf(),
+                    enhancements = it.enhancements?.copyOf()
+                ) }.toTypedArray()
+            ),
+            tags = datasheet.tags.copyOf()
+        )
     }
 }
