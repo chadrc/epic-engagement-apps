@@ -186,6 +186,12 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    fun setWeaponName(value: String, weaponIndex: Int) {
+        editSheetValue {
+            it.statTable.weapons[weaponIndex].name = value
+        }
+    }
+
     fun setAttacks(value: Int, index: Int, weaponIndex: Int) {
         editSheetValue {
             it.statTable.weapons[weaponIndex].attacks[index] = value

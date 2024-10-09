@@ -171,7 +171,6 @@ fun App(model: AppViewModel = AppViewModel()) {
 
 @Composable
 fun EditSheet(model: AppViewModel, sheet: Datasheet) {
-    println("render edit sheet")
     TextField(
         sheet.name,
         singleLine = true,
@@ -229,7 +228,9 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
 
             for (i in IntRange(0, sheet.statTable.weapons.size - 1)) {
                 val weapon = sheet.statTable.weapons[i]
-                StatTableHeaderRow(weapon.name, MaterialTheme.colorScheme.primaryContainer)
+                StatTableWeaponHeaderRow(weapon.name, MaterialTheme.colorScheme.primaryContainer) {
+                    model.setWeaponName(it, i)
+                }
                 StatTableHeaderRow("Attacks", MaterialTheme.colorScheme.secondaryContainer)
                 StatTableHeaderRow("Range", MaterialTheme.colorScheme.onSecondary)
                 StatTableHeaderRow("To Hit", MaterialTheme.colorScheme.secondaryContainer)
@@ -264,7 +265,7 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
                     commitChangedInt(it) { num -> model.setToResist(num, i) }
                 }
                 StatTableRow(hardness?.toString() ?: "", MaterialTheme.colorScheme.onSecondary) {
-                    commitChangedInt(it) { num -> model.setHardness(num, i)}
+                    commitChangedInt(it) { num -> model.setHardness(num, i) }
                 }
                 StatTableRow(enhancements.orEmpty(), MaterialTheme.colorScheme.secondaryContainer) {
                     model.setEnhancements(it, i)
@@ -279,22 +280,22 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
                     val weaponEnhancements = weapon.enhancements?.get(i)
 
                     EmptyTableRow(MaterialTheme.colorScheme.primaryContainer)
-                    StatTableRow(attacks.toString(), MaterialTheme.colorScheme.secondaryContainer){
-                        commitChangedInt(it) { num -> model.setAttacks(num, i, w)}
+                    StatTableRow(attacks.toString(), MaterialTheme.colorScheme.secondaryContainer) {
+                        commitChangedInt(it) { num -> model.setAttacks(num, i, w) }
                     }
-                    StatTableRow(range.toString(), MaterialTheme.colorScheme.onSecondary){
-                        commitChangedInt(it) { num -> model.setRange(num, i, w)}
+                    StatTableRow(range.toString(), MaterialTheme.colorScheme.onSecondary) {
+                        commitChangedInt(it) { num -> model.setRange(num, i, w) }
                     }
-                    StatTableRow(toHit.toString(), MaterialTheme.colorScheme.secondaryContainer){
-                        commitChangedInt(it) { num -> model.setToHit(num, i, w)}
+                    StatTableRow(toHit.toString(), MaterialTheme.colorScheme.secondaryContainer) {
+                        commitChangedInt(it) { num -> model.setToHit(num, i, w) }
                     }
-                    StatTableRow(damage.toString(), MaterialTheme.colorScheme.onSecondary){
-                        commitChangedInt(it) { num -> model.setDamage(num, i, w)}
+                    StatTableRow(damage.toString(), MaterialTheme.colorScheme.onSecondary) {
+                        commitChangedInt(it) { num -> model.setDamage(num, i, w) }
                     }
                     StatTableRow(
                         weaponEnhancements.orEmpty(),
                         MaterialTheme.colorScheme.secondaryContainer
-                    ){
+                    ) {
                         model.setWeaponEnhancements(it, i, w)
                     }
                 }
@@ -315,7 +316,33 @@ fun StatTableHeaderRow(text: String, color: Color) {
 }
 
 @Composable
-fun EmptyTableRow(color: Color,) {
+fun StatTableWeaponHeaderRow(
+    text: String,
+    color: Color,
+    onValueChange: (String) -> Unit = {},
+) {
+    Row(
+        modifier = Modifier
+            .background(color)
+            .fillMaxWidth()
+            .height(32.dp)
+            .padding(6.dp, 3.dp)
+    ) {
+        BasicTextField(
+            text,
+            singleLine = true,
+            textStyle = TextStyle(
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                fontSize = 16.sp,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            onValueChange = onValueChange,
+        )
+    }
+}
+
+@Composable
+fun EmptyTableRow(color: Color) {
     Row(
         modifier = Modifier
             .background(color)
