@@ -152,7 +152,7 @@ class AppViewModel : ViewModel() {
                 editFunc(editSheet)
                 edits[selectedSheet.name] = Pair(true, editSheet)
             } else {
-                println("No sheet to edit")
+                // error, show?
             }
 
             state.copy(sheetEdits = edits)
