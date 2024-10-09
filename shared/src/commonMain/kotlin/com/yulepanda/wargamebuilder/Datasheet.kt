@@ -32,12 +32,13 @@ data class RollTable(
     var toSave: Array<Int> = arrayOf(4),
     var toResist: Array<Int>? = null,
     var hardness: Array<Int>? = null,
+    var enhancements: Array<String>? = null,
     var weapons: Array<WeaponTable> = arrayOf(WeaponTable())
 )
 
 @Serializable
 data class WeaponTable (
-    var name: String = "",
+    var name: String = "New Weapon",
     var attacks: Array<Int> = arrayOf(1),
     var range: Array<Int> = arrayOf(3),
     var toHit: Array<Int> = arrayOf(4),

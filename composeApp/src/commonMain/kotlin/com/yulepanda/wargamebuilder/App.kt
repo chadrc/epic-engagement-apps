@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -219,4 +220,84 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
             },
         )
     }
+    Row {
+        Column(
+            modifier = Modifier.fillMaxWidth(.2f),
+        ) {
+            StatTableHeaderRow("Result", MaterialTheme.colorScheme.onPrimary)
+            StatTableHeaderRow("To Save", MaterialTheme.colorScheme.onSecondary)
+            StatTableHeaderRow("To Resist", MaterialTheme.colorScheme.secondaryContainer)
+            StatTableHeaderRow("Hardness", MaterialTheme.colorScheme.onSecondary)
+            StatTableHeaderRow("Enhancements", MaterialTheme.colorScheme.secondaryContainer)
+
+            for (i in IntRange(0, sheet.statTable.weapons.size - 1)) {
+                val weapon = sheet.statTable.weapons[i]
+                StatTableHeaderRow(weapon.name, MaterialTheme.colorScheme.primaryContainer)
+                StatTableHeaderRow("Attacks", MaterialTheme.colorScheme.secondaryContainer)
+                StatTableHeaderRow("Range", MaterialTheme.colorScheme.onSecondary)
+                StatTableHeaderRow("To Hit", MaterialTheme.colorScheme.secondaryContainer)
+                StatTableHeaderRow("Damage", MaterialTheme.colorScheme.onSecondary)
+                StatTableHeaderRow("Enhancements", MaterialTheme.colorScheme.secondaryContainer)
+            }
+        }
+
+        val parts = sheet.statTable.resultBreaks.size
+        for (i in IntRange(0, parts - 1)) {
+            val result = sheet.statTable.resultBreaks[i]
+            val toSave = sheet.statTable.toSave[i]
+            val toResist = sheet.statTable.toResist?.get(i)
+            val hardness = sheet.statTable.hardness?.get(i)
+            val enhancements = sheet.statTable.enhancements?.get(i)
+
+            Column(
+                modifier = Modifier.fillMaxWidth(1.0f / parts),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                StatTableRow(result.toString(), MaterialTheme.colorScheme.onPrimary)
+                StatTableRow(toSave.toString(), MaterialTheme.colorScheme.onSecondary)
+                StatTableRow(toResist?.toString() ?: "", MaterialTheme.colorScheme.secondaryContainer)
+                StatTableRow(hardness?.toString() ?: "", MaterialTheme.colorScheme.onSecondary)
+                StatTableRow(enhancements.orEmpty(), MaterialTheme.colorScheme.secondaryContainer)
+
+                for (w in IntRange(0, sheet.statTable.weapons.size - 1)) {
+                    val weapon = sheet.statTable.weapons[w]
+                    val attacks = weapon.attacks[i]
+                    val range = weapon.range[i]
+                    val toHit = weapon.toHit[i]
+                    val damage = weapon.damage[i]
+                    val weaponEnhancements = weapon.enhancements?.get(i)
+
+                    StatTableRow("", MaterialTheme.colorScheme.primaryContainer)
+                    StatTableRow(attacks.toString(), MaterialTheme.colorScheme.secondaryContainer)
+                    StatTableRow(range.toString(), MaterialTheme.colorScheme.onSecondary)
+                    StatTableRow(toHit.toString(), MaterialTheme.colorScheme.secondaryContainer)
+                    StatTableRow(damage.toString(), MaterialTheme.colorScheme.onSecondary)
+                    StatTableRow(weaponEnhancements.orEmpty(), MaterialTheme.colorScheme.secondaryContainer)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StatTableHeaderRow(text: String, color: Color) {
+    Row(
+        modifier = Modifier
+            .background(color)
+            .fillMaxWidth()
+            .padding(6.dp, 3.dp)
+    ) { Text(text) }
+}
+
+@Composable
+fun StatTableRow(text: String, color: Color) {
+    Row(
+        modifier = Modifier
+            .background(color)
+            .fillMaxWidth()
+            .padding(6.dp, 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) { Text(text) }
 }
