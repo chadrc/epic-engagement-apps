@@ -228,7 +228,7 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
 
             for (i in IntRange(0, sheet.statTable.weapons.size - 1)) {
                 val weapon = sheet.statTable.weapons[i]
-                StatTableWeaponHeaderRow(weapon.name, MaterialTheme.colorScheme.primaryContainer) {
+                StatTableWeaponHeaderRow(weapon.name, MaterialTheme.colorScheme.surfaceContainerHighest) {
                     model.setWeaponName(it, i)
                 }
                 StatTableHeaderRow("Attacks", MaterialTheme.colorScheme.secondaryContainer)
@@ -279,7 +279,7 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
                     val damage = weapon.damage[i]
                     val weaponEnhancements = weapon.enhancements?.get(i)
 
-                    EmptyTableRow(MaterialTheme.colorScheme.primaryContainer)
+                    EmptyTableRow(MaterialTheme.colorScheme.surfaceContainerHighest)
                     StatTableRow(attacks.toString(), MaterialTheme.colorScheme.secondaryContainer) {
                         commitChangedInt(it) { num -> model.setAttacks(num, i, w) }
                     }
