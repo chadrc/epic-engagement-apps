@@ -49,3 +49,7 @@ actual fun deleteDatasheetFile(fileName: String) {
         FileSystem.SYSTEM.delete(filePath)
     }
 }
+
+actual fun logInfo(message: String) {
+    println(message)
+}

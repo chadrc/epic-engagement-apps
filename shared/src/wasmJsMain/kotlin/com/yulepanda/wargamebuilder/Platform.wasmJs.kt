@@ -14,3 +14,6 @@ actual fun getDatasheets(): List<Datasheet> {
 
 actual fun deleteDatasheetFile(fileName: String) {
 }
+
+actual fun logInfo(message: String) {
+}

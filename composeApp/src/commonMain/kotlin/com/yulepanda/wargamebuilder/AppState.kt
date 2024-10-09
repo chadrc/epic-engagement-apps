@@ -5,14 +5,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import org.jetbrains.skia.Data
 
 data class AppState(
     val datasheets: List<Datasheet> = listOf(Datasheet()),
     val selectedSheet: Int = 0,
-    val newSheetName: String = ""
+    val newSheetName: String = "",
+    val sheetEdits: Map<String, Pair<Boolean, Datasheet>> = mapOf()
 )
 
-class AppViewModel: ViewModel() {
+class AppViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(AppState())
     val uiState: StateFlow<AppState> = _uiState.asStateFlow()
 
@@ -48,6 +50,8 @@ class AppViewModel: ViewModel() {
         _uiState.update { state ->
             state.copy(datasheets = getDatasheets())
         }
+
+        setSelected(uiState.value.selectedSheet)
     }
 
     fun setNewSheetName(text: String) {
@@ -77,6 +81,59 @@ class AppViewModel: ViewModel() {
     }
 
     fun setSelected(index: Int) {
-        _uiState.update { it.copy(selectedSheet = index) }
+        _uiState.update { state ->
+            val edits = state.sheetEdits.toMutableMap()
+            val selectedSheet = state.datasheets[index]
+            if (!edits.containsKey(selectedSheet.name)) {
+                edits[selectedSheet.name] = Pair(false, selectedSheet.copy())
+            }
+
+            state.copy(selectedSheet = index, sheetEdits = edits)
+        }
+    }
+
+    fun editName(name: String) {
+        editSheetValue { it.name = name }
+    }
+
+    fun editSkill(skill: Int?) {
+        if (skill == null) {
+            // show error
+        } else {
+            editSheetValue { it.skill = skill }
+        }
+    }
+
+    fun editHealth(health: Int?) {
+        if (health == null) {
+            // show error
+        } else {
+            editSheetValue { it.health = health }
+        }
+    }
+
+    fun editSpeed(value: Int?) {
+        if (value == null) {
+            // show error
+        } else {
+            editSheetValue { it.speed = value }
+        }
+    }
+
+    private fun editSheetValue(editFunc: (Datasheet) -> Unit) {
+        _uiState.update { state ->
+            val edits = state.sheetEdits.toMutableMap()
+            val selectedSheet = state.datasheets[state.selectedSheet]
+            val editSheet = edits[selectedSheet.name]?.second?.copy()
+
+            if (editSheet != null) {
+                editFunc(editSheet)
+                edits[selectedSheet.name] = Pair(true, editSheet)
+            } else {
+                println("No sheet to edit")
+            }
+
+            state.copy(sheetEdits = edits)
+        }
     }
 }
