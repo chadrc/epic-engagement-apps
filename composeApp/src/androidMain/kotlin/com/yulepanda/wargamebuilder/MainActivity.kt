@@ -13,9 +13,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val state = remember {
-                mutableStateOf(AppState())
-            }
             App()
         }
     }
