@@ -30,9 +30,9 @@ data class ModelGroup(
 data class RollTable(
     var resultBreaks: Array<Int> = arrayOf(1),
     var toSave: Array<Int> = arrayOf(4),
-    var toResist: Array<Int>? = null,
-    var hardness: Array<Int>? = null,
-    var enhancements: Array<String>? = null,
+    var toResist: Array<Int?> = arrayOf(null),
+    var hardness: Array<Int?> = arrayOf(null),
+    var enhancements: Array<String?> = arrayOf(null),
     var weapons: Array<WeaponTable> = arrayOf(WeaponTable())
 )
 
@@ -43,5 +43,5 @@ data class WeaponTable(
     var range: Array<Int> = arrayOf(3),
     var toHit: Array<Int> = arrayOf(4),
     var damage: Array<Int> = arrayOf(1),
-    var enhancements: Array<String>? = null
+    var enhancements: Array<String?> = arrayOf(null)
 )

@@ -47,7 +47,11 @@ class AppViewModel : ViewModel() {
 
     fun loadAllSheets() {
         _uiState.update { state ->
-            state.copy(datasheets = getDatasheets())
+            var sheets = getDatasheets()
+            if (sheets.isEmpty()) {
+                sheets = listOf(Datasheet())
+            }
+            state.copy(datasheets = sheets)
         }
 
         setSelected(uiState.value.selectedSheet)
@@ -155,34 +159,19 @@ class AppViewModel : ViewModel() {
 
     fun setToResist(value: Int, index: Int) {
         editSheetValue {
-            val resist = it.statTable.toResist
-            if (resist == null) {
-                it.statTable.toResist = arrayOf(value)
-            } else {
-                resist[index] = value
-            }
+            it.statTable.toResist[index] = value
         }
     }
 
     fun setHardness(value: Int, index: Int) {
         editSheetValue {
-            val hardness = it.statTable.hardness
-            if (hardness == null) {
-                it.statTable.hardness = arrayOf(value)
-            } else {
-                hardness[index] = value
-            }
+            it.statTable.hardness[index] = value
         }
     }
 
     fun setEnhancements(value: String, index: Int) {
         editSheetValue {
-            val enhancements = it.statTable.enhancements
-            if (enhancements == null) {
-                it.statTable.enhancements = arrayOf(value)
-            } else {
-                enhancements[index] = value
-            }
+            it.statTable.enhancements[index] = value
         }
     }
 
@@ -218,12 +207,7 @@ class AppViewModel : ViewModel() {
 
     fun setWeaponEnhancements(value: String, index: Int, weaponIndex: Int) {
         editSheetValue {
-            val list = it.statTable.weapons[weaponIndex].enhancements
-            if (list == null) {
-                it.statTable.weapons[weaponIndex].enhancements = arrayOf(value)
-            } else {
-                list[index] = value
-            }
+            it.statTable.weapons[weaponIndex].enhancements[index] = value
         }
     }
 
@@ -249,16 +233,18 @@ class AppViewModel : ViewModel() {
             statTable = datasheet.statTable.copy(
                 datasheet.statTable.resultBreaks.copyOf(),
                 datasheet.statTable.toSave.copyOf(),
-                datasheet.statTable.toResist?.copyOf(),
-                datasheet.statTable.hardness?.copyOf(),
-                datasheet.statTable.enhancements?.copyOf(),
-                datasheet.statTable.weapons.map { it.copy(
-                    attacks = it.attacks.copyOf(),
-                    range = it.range.copyOf(),
-                    toHit = it.toHit.copyOf(),
-                    damage = it.damage.copyOf(),
-                    enhancements = it.enhancements?.copyOf()
-                ) }.toTypedArray()
+                datasheet.statTable.toResist.copyOf(),
+                datasheet.statTable.hardness.copyOf(),
+                datasheet.statTable.enhancements.copyOf(),
+                datasheet.statTable.weapons.map {
+                    it.copy(
+                        attacks = it.attacks.copyOf(),
+                        range = it.range.copyOf(),
+                        toHit = it.toHit.copyOf(),
+                        damage = it.damage.copyOf(),
+                        enhancements = it.enhancements.copyOf()
+                    )
+                }.toTypedArray()
             ),
             tags = datasheet.tags.copyOf()
         )
