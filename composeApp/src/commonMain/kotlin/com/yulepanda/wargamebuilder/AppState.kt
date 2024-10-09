@@ -17,6 +17,10 @@ class AppViewModel: ViewModel() {
     val uiState: StateFlow<AppState> = _uiState.asStateFlow()
 
     fun addNewSheet() {
+        if (uiState.value.newSheetName.isBlank()) {
+            // error
+            return
+        }
         val existing = uiState.value.datasheets.find { it.name == uiState.value.newSheetName }
 
         if (existing == null) {
