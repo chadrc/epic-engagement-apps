@@ -17,8 +17,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -165,7 +167,7 @@ fun App(model: AppViewModel = AppViewModel()) {
                                                 },
                                             )
                                             TextField(
-                                                editSheet.health.toString(),
+                                                editSheet.speed.toString(),
                                                 singleLine = true,
                                                 label = { Text("Speed") },
                                                 modifier = Modifier.fillMaxWidth(),
@@ -186,6 +188,9 @@ fun App(model: AppViewModel = AppViewModel()) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
+                                FloatingActionButton(onClick = { model.saveSelectedSheet() }) {
+                                    Icon(Icons.Filled.Done, contentDescription = "Save")
+                                }
                                 FloatingActionButton(onClick = { model.deleteSelectedSheet() }) {
                                     Icon(Icons.Rounded.Delete, contentDescription = "Delete")
                                 }

@@ -80,6 +80,28 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    fun saveSelectedSheet() {
+        if (_uiState.value.selectedSheet < _uiState.value.datasheets.size) {
+            _uiState.update { state ->
+                val sheets = state.datasheets.toMutableList()
+                val edits = state.sheetEdits.toMutableMap()
+                val selectedSheet = state.datasheets[state.selectedSheet]
+                val oldName = selectedSheet.name
+                val editSheet = edits[selectedSheet.name]?.second?.copy() ?: return
+                sheets[state.selectedSheet] = editSheet
+
+                // delete first in case of name change
+                deleteDatasheetFile("${oldName}.json")
+                saveDatasheet("${editSheet.name}.json", editSheet)
+
+                edits.remove(oldName)
+                edits[editSheet.name] = Pair(false, sheets[state.selectedSheet])
+
+                state.copy(datasheets = sheets, sheetEdits = edits)
+            }
+        }
+    }
+
     fun setSelected(index: Int) {
         _uiState.update { state ->
             val edits = state.sheetEdits.toMutableMap()
