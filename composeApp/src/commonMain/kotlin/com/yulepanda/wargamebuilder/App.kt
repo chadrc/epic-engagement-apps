@@ -4,21 +4,37 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.ShapeDefaults
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -29,24 +45,6 @@ fun App(model: AppViewModel = AppViewModel()) {
         colorScheme = darkColorScheme(
         )
     ) {
-//        Scaffold(topBar = {
-//            TopAppBar(
-//                title = { Text("Wargame") },
-//                navigationIcon = {
-//                    IconButton(onClick = {}) {
-//                        Icon(
-//                            imageVector = Icons.Filled.Menu,
-//                            contentDescription = "Main Menu"
-//                        )
-//                    }
-//                }
-//            )
-//        }) {
-//
-//        }
-
-//        var sheets by remember { mutableStateListOf(Datasheet()) }
-
         val state by model.uiState.collectAsState()
 
         val selectedSheet = if (state.selectedSheet < state.datasheets.size) {
@@ -65,33 +63,23 @@ fun App(model: AppViewModel = AppViewModel()) {
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .fillMaxHeight()
                         .fillMaxWidth(.25f)
+                        .padding(5.dp)
                 ) {
-
-                    // center panel
-                    Box(
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(5.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                        ) {
-                            // sheet options
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Button(
-                                    shape = ButtonDefaults.shape,
-                                    onClick = { model.addNewSheet() },
+                        itemsIndexed(state.datasheets) { index, datasheet ->
+                            Row {
+                                TextButton(
+                                    onClick = { model.setSelected(index) },
+                                    shape = RectangleShape,
+                                    contentPadding = PaddingValues(1.dp),
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text("New Sheet")
+                                    Text(datasheet.name, textAlign = TextAlign.Left)
+                                    Box(modifier = Modifier.fillMaxWidth()) {  }
                                 }
-                            }
-
-                            for (sheet in state.datasheets) {
-                                Text(sheet.name)
                             }
                         }
                     }
@@ -108,11 +96,45 @@ fun App(model: AppViewModel = AppViewModel()) {
                             .fillMaxSize()
                             .padding(5.dp)
                     ) {
-                        if (selectedSheet == null) {
-                            // sheet preview
-                            Text("Select a datasheet to see its info")
-                        } else {
-                            Text("Name: ${selectedSheet.name}")
+                        Column {
+                            // sheet options
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                OutlinedTextField(
+                                    value = state.newSheetName,
+                                    placeholder = { Text("New Datasheet") },
+                                    onValueChange = { model.setNewSheetName(it) }
+                                )
+                                FloatingActionButton(
+                                    shape = ButtonDefaults.shape,
+                                    onClick = { model.addNewSheet() },
+                                ) {
+                                    Icon(Icons.Rounded.Add, contentDescription = "New Datasheet")
+                                }
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
+                                    .fillMaxHeight(.9f)
+                            ) {
+                                if (selectedSheet == null) {
+                                    // sheet preview
+                                    Text("Select a datasheet to see its info")
+                                } else {
+                                    Text("Name: ${selectedSheet.name}")
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                FloatingActionButton(onClick = { model.deleteSelectedSheet() }) {
+                                    Icon(Icons.Rounded.Delete, contentDescription = "Delete")
+                                }
+                            }
                         }
                     }
                 }
@@ -134,20 +156,7 @@ fun App(model: AppViewModel = AppViewModel()) {
                 }
             }
         }
-
-//        var showContent by remember { mutableStateOf(false) }
-
-//        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-//            Button(onClick = { showContent = !showContent }) {
-//                Text("Click me!")
-//            }
-//            AnimatedVisibility(showContent) {
-//                val greeting = remember { Greeting().greet() }
-//                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-//                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-//                    Text("Compose: $greeting")
-//                }
-//            }
-//        }
     }
+
+    model.loadAllSheets()
 }

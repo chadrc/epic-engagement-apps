@@ -7,3 +7,7 @@ interface Platform {
 expect fun getPlatform(): Platform
 
 expect fun platformSaveDatasheet(fileName: String, datasheet: Datasheet)
+
+expect fun getDatasheets(): List<Datasheet>
+
+expect fun deleteDatasheetFile(fileName: String)
