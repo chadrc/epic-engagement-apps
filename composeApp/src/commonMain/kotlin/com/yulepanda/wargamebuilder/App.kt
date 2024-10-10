@@ -123,7 +123,11 @@ fun App(model: AppViewModel = AppViewModel()) {
                             .padding(5.dp)
                     ) {
                         // sheet preview
-                        Text("Statistics")
+                        StatisticsPanel(
+                            state,
+                            model,
+                            editSheet
+                        )
                     }
                 }
             }

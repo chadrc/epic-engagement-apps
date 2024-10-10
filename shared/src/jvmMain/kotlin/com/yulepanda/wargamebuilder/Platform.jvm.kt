@@ -4,7 +4,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okio.FileSystem
 import okio.Path.Companion.toPath
-import javax.xml.crypto.Data
+import java.math.RoundingMode
 
 const val APP_DATA_DIR = "Wargame"
 const val SHEETS_DIR = "Sheets"
@@ -52,4 +52,8 @@ actual fun deleteDatasheetFile(fileName: String) {
 
 actual fun logInfo(message: String) {
     println(message)
+}
+
+actual fun formatDouble(num: Double): String {
+    return num.toBigDecimal().setScale(4, RoundingMode.HALF_UP).toDouble().toString()
 }

@@ -13,3 +13,5 @@ expect fun getDatasheets(): List<Datasheet>
 expect fun deleteDatasheetFile(fileName: String)
 
 expect fun logInfo(message: String)
+
+expect fun formatDouble(num: Double): String

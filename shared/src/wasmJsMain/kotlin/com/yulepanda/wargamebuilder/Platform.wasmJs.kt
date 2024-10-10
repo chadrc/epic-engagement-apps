@@ -17,3 +17,8 @@ actual fun deleteDatasheetFile(fileName: String) {
 
 actual fun logInfo(message: String) {
 }
+
+
+actual fun formatDouble(num: Double): String {
+    return "Not implemented"
+}

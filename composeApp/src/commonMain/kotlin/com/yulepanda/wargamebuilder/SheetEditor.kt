@@ -387,7 +387,7 @@ fun SheetEditor(model: AppViewModel, state: AppState, sheet: Datasheet) {
                         MaterialTheme.colorScheme.onSecondary,
                         state
                     ) {
-                        commitChangedInt(it) { num -> model.setRange(num, i, w) }
+                        commitChangedInt(stripM(range, it)) { num -> model.setRange(num, i, w) }
                     }
                     StatTableRow(
                         toStringPositiveOrEmpty(toHit),
@@ -555,4 +555,12 @@ fun parseChangedInt(change: String): Int? {
 
 fun toStringPositiveOrEmpty(value: Int, default: String = ""): String {
     return if (value > 0) value.toString() else default
+}
+
+fun stripM(value: Int, s: String): String {
+    return if (value > 0) {
+        s
+    } else {
+        s.replace("M", "")
+    }
 }
