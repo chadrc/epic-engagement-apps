@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,7 +24,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +40,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -232,6 +238,27 @@ fun EditSheet(model: AppViewModel, state: AppState, sheet: Datasheet) {
                 model.editSpeed(parseChangedInt(it))
             },
         )
+    }
+    SectionDropDown(
+        "Abilities & Tags",
+        state.showingAbilities,
+        { model.toggleShowAbilities() },
+        state,
+        titleDescription = "Show Abilities"
+    ) {
+        Column(
+            modifier = Modifier.height(state.tableRowHeight * 5).fillMaxWidthPart(2)
+        ) {
+            // Abilities
+            Text("Abilities")
+        }
+
+        Column(
+            modifier = Modifier.height(state.tableRowHeight * 5).fillMaxWidth()
+        )  {
+            // Tags
+            Text("Tags")
+        }
     }
     Row {
         Column(
@@ -503,6 +530,51 @@ fun StatTableRow(
             modifier = Modifier.fillMaxWidth(),
             onValueChange = onValueChange,
         )
+    }
+}
+
+@Composable
+fun SectionDropDown(
+    title: String,
+    showing: Boolean,
+    clickAction: () -> Unit,
+    state: AppState,
+    titleDescription: String = title,
+    content: @Composable RowScope.() -> Unit
+) {
+    Row {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(state.tableRowHeight)
+            ) {
+                Icon(
+                    Icons.Rounded.ArrowDropDown,
+                    contentDescription = titleDescription,
+                    modifier = Modifier
+                        .rotate(if (showing) 0.0f else -90.0f)
+                        .clickable(onClick = clickAction)
+                )
+                Text(title)
+                Box(modifier = Modifier.fillMaxSize())
+            }
+            if (showing) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                    content = content
+                )
+            }
+        }
     }
 }
 

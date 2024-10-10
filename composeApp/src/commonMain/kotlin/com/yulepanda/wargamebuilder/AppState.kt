@@ -14,6 +14,7 @@ data class AppState(
     val newSheetName: String = "",
     val sheetEdits: Map<String, Pair<Boolean, Datasheet>> = mapOf(),
     val tableRowHeight: Dp = 32.dp,
+    val showingAbilities: Boolean = false
 )
 
 class AppViewModel : ViewModel() {
@@ -58,6 +59,10 @@ class AppViewModel : ViewModel() {
         }
 
         setSelected(uiState.value.selectedSheet)
+    }
+
+    fun toggleShowAbilities() {
+        _uiState.update { it.copy(showingAbilities = !it.showingAbilities) }
     }
 
     fun setNewSheetName(text: String) {
