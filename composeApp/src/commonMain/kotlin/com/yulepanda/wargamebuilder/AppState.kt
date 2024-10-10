@@ -32,17 +32,23 @@ class AppViewModel : ViewModel() {
         if (existing == null) {
             _uiState.update { s ->
                 val sheets = s.datasheets.toMutableList()
+                val edits = s.sheetEdits.toMutableMap()
                 val datasheet = Datasheet()
                 datasheet.name = uiState.value.newSheetName
 
                 val path = "${datasheet.name}.json"
                 saveDatasheet(path, datasheet)
 
+                val newIndex = sheets.size
+
+                edits[datasheet.name] = Pair(false, datasheet)
                 sheets.add(datasheet)
+
                 s.copy(
                     datasheets = sheets,
                     newSheetName = "",
-                    selectedSheet = sheets.size - 1
+                    selectedSheet = newIndex,
+                    sheetEdits = edits,
                 )
             }
         } else {
@@ -76,6 +82,7 @@ class AppViewModel : ViewModel() {
         if (_uiState.value.selectedSheet < _uiState.value.datasheets.size) {
             _uiState.update { state ->
                 val sheets = state.datasheets.toMutableList()
+                val edits = state.sheetEdits.toMutableMap()
                 val removed = sheets.removeAt(_uiState.value.selectedSheet)
 
                 val selected = if (_uiState.value.selectedSheet >= sheets.size) {
@@ -84,10 +91,18 @@ class AppViewModel : ViewModel() {
                     _uiState.value.selectedSheet
                 }
 
+                if (selected >= 0 && !edits.containsKey(sheets[selected].name)) {
+                    edits[sheets[selected].name] = Pair(false, cloneDatasheet(sheets[selected]))
+                }
+
                 val path = "${removed.name}.json"
                 deleteDatasheetFile(path)
 
-                state.copy(datasheets = sheets, selectedSheet = selected)
+                state.copy(
+                    datasheets = sheets,
+                    selectedSheet = selected,
+                    sheetEdits = edits
+                )
             }
         }
     }
