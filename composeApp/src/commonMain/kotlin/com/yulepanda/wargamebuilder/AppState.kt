@@ -148,6 +148,14 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    fun setModelCount(value: Int?) {
+        if (value == null) {
+            // show error
+        } else {
+            editSheetValue { it.modelCount = value }
+        }
+    }
+
     fun setResultBreak(value: Int, index: Int) {
         editSheetValue {
             it.statTable.resultBreaks[index] = value
@@ -330,7 +338,6 @@ class AppViewModel : ViewModel() {
 
     private fun cloneDatasheet(datasheet: Datasheet): Datasheet {
         return datasheet.copy(
-            composition = datasheet.composition.map { it.copy() }.toTypedArray(),
             abilities = datasheet.abilities.map { it.copy() }.toTypedArray(),
             statTable = datasheet.statTable.copy(
                 datasheet.statTable.resultBreaks.copyOf(),

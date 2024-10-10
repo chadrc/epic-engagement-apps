@@ -8,7 +8,7 @@ data class Datasheet(
     var skill: Int = 0,
     var health: Int = 0,
     var speed: Int = 0,
-    var composition: Array<ModelGroup> = arrayOf(ModelGroup()),
+    var modelCount: Int = 0,
     var abilities: Array<UnitAbility> = emptyArray(),
     var statTable: RollTable = RollTable(),
     var tags: Array<String> = emptyArray()
@@ -18,12 +18,6 @@ data class Datasheet(
 data class UnitAbility(
     var name: String = "",
     var description: String? = null
-)
-
-@Serializable
-data class ModelGroup(
-    var name: String = "Model Name",
-    var count: Int = 0
 )
 
 @Serializable

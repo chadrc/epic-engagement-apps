@@ -185,10 +185,22 @@ fun EditSheet(model: AppViewModel, state: AppState, sheet: Datasheet) {
     )
     Row {
         TextField(
+            toStringPositiveOrEmpty(sheet.modelCount),
+            singleLine = true,
+            label = { Text("Model Count") },
+            modifier = Modifier.fillMaxWidthPart(4),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ),
+            onValueChange = {
+                model.setModelCount(parseChangedInt(it))
+            },
+        )
+        TextField(
             toStringPositiveOrEmpty(sheet.skill),
             singleLine = true,
             label = { Text("Skill") },
-            modifier = Modifier.fillMaxWidth(.34f),
+            modifier = Modifier.fillMaxWidthPart(3),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number
             ),
@@ -200,7 +212,7 @@ fun EditSheet(model: AppViewModel, state: AppState, sheet: Datasheet) {
             toStringPositiveOrEmpty(sheet.health),
             singleLine = true,
             label = { Text("Health") },
-            modifier = Modifier.fillMaxWidth(.5f),
+            modifier = Modifier.fillMaxWidthPart(2),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number
             ),
@@ -328,7 +340,7 @@ fun EditSheet(model: AppViewModel, state: AppState, sheet: Datasheet) {
             val enhancements = sheet.statTable.enhancements[i]
 
             Column(
-                modifier = Modifier.fillMaxWidth(1.0f / (parts - i)),
+                modifier = Modifier.fillMaxWidthPart(parts - i),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -392,7 +404,7 @@ fun EditSheet(model: AppViewModel, state: AppState, sheet: Datasheet) {
                     StatTableRow(toStringPositiveOrEmpty(attacks), MaterialTheme.colorScheme.secondaryContainer, state) {
                         commitChangedInt(it) { num -> model.setAttacks(num, i, w) }
                     }
-                    StatTableRow(toStringPositiveOrEmpty(range), MaterialTheme.colorScheme.onSecondary, state) {
+                    StatTableRow(toStringPositiveOrEmpty(range, "M"), MaterialTheme.colorScheme.onSecondary, state) {
                         commitChangedInt(it) { num -> model.setRange(num, i, w) }
                     }
                     StatTableRow(toStringPositiveOrEmpty(toHit), MaterialTheme.colorScheme.secondaryContainer, state) {
@@ -506,6 +518,6 @@ fun parseChangedInt(change: String): Int? {
     }
 }
 
-fun toStringPositiveOrEmpty(value: Int): String {
-    return if (value > 0) value.toString() else ""
+fun toStringPositiveOrEmpty(value: Int, default: String = ""): String {
+    return if (value > 0) value.toString() else default
 }
