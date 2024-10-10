@@ -1,5 +1,7 @@
 package com.yulepanda.wargamebuilder
 
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,7 +12,8 @@ data class AppState(
     val datasheets: List<Datasheet> = listOf(Datasheet()),
     val selectedSheet: Int = 0,
     val newSheetName: String = "",
-    val sheetEdits: Map<String, Pair<Boolean, Datasheet>> = mapOf()
+    val sheetEdits: Map<String, Pair<Boolean, Datasheet>> = mapOf(),
+    val tableRowHeight: Dp = 32.dp,
 )
 
 class AppViewModel : ViewModel() {
@@ -211,12 +214,111 @@ class AppViewModel : ViewModel() {
         }
     }
 
-    private fun editSheetValue(editFunc: (Datasheet) -> Unit) {
+    fun addResult() {
         _uiState.update { state ->
             val edits = state.sheetEdits.toMutableMap()
             val selectedSheet = state.datasheets[state.selectedSheet]
             val newSheet = edits[selectedSheet.name]?.second ?: return
 
+            val editSheet = cloneDatasheet(newSheet)
+
+            editSheet.statTable.resultBreaks = editSheet.statTable.resultBreaks.plus(0)
+            editSheet.statTable.toSave = editSheet.statTable.toSave.plus(4)
+            editSheet.statTable.toResist = editSheet.statTable.toResist.plus(null)
+            editSheet.statTable.hardness = editSheet.statTable.hardness.plus(null)
+            editSheet.statTable.enhancements = editSheet.statTable.enhancements.plus(null)
+
+            for (weapon in editSheet.statTable.weapons) {
+                weapon.attacks = weapon.attacks.plus(0)
+                weapon.toHit = weapon.toHit.plus(4)
+                weapon.range = weapon.range.plus(5)
+                weapon.damage = weapon.damage.plus(1)
+                weapon.enhancements = weapon.enhancements.plus(null)
+            }
+
+            edits[selectedSheet.name] = Pair(true, editSheet)
+
+            state.copy(sheetEdits = edits)
+        }
+    }
+
+    fun removeResult(index: Int) {
+        _uiState.update { state ->
+            val edits = state.sheetEdits.toMutableMap()
+            val selectedSheet = state.datasheets[state.selectedSheet]
+            val newSheet = edits[selectedSheet.name]?.second ?: return
+
+            val editSheet = cloneDatasheet(newSheet)
+
+            editSheet.statTable.resultBreaks = editSheet.statTable.resultBreaks.pluck(index)
+            editSheet.statTable.toSave = editSheet.statTable.toSave.pluck(index)
+            editSheet.statTable.toResist = editSheet.statTable.toResist.pluck(index)
+            editSheet.statTable.hardness = editSheet.statTable.hardness.pluck(index)
+            editSheet.statTable.enhancements = editSheet.statTable.enhancements.pluck(index)
+
+            for (weapon in editSheet.statTable.weapons) {
+                weapon.attacks = weapon.attacks.pluck(index)
+                weapon.toHit = weapon.toHit.pluck(index)
+                weapon.range = weapon.range.pluck(index)
+                weapon.damage = weapon.damage.pluck(index)
+                weapon.enhancements = weapon.enhancements.pluck(index)
+            }
+
+            edits[selectedSheet.name] = Pair(true, editSheet)
+
+            state.copy(sheetEdits = edits)
+        }
+    }
+
+    fun addWeapon() {
+        _uiState.update { state ->
+            val edits = state.sheetEdits.toMutableMap()
+            val selectedSheet = state.datasheets[state.selectedSheet]
+            val newSheet = edits[selectedSheet.name]?.second ?: return
+
+            val editSheet = cloneDatasheet(newSheet)
+
+            val weapon = WeaponTable()
+            val additionColumns = editSheet.statTable.resultBreaks.size - 1
+
+            for (i in IntRange(0, additionColumns - 1)) {
+                weapon.attacks = weapon.attacks.plus(1)
+                weapon.toHit = weapon.toHit.plus(4)
+                weapon.range = weapon.range.plus(5)
+                weapon.damage = weapon.damage.plus(1)
+                weapon.enhancements = weapon.enhancements.plus(null)
+            }
+
+            editSheet.statTable.weapons = editSheet.statTable.weapons.plus(weapon)
+
+            edits[selectedSheet.name] = Pair(true, editSheet)
+
+            state.copy(sheetEdits = edits)
+        }
+    }
+
+    fun removeWeapon(index: Int) {
+        _uiState.update { state ->
+            val edits = state.sheetEdits.toMutableMap()
+            val selectedSheet = state.datasheets[state.selectedSheet]
+            val newSheet = edits[selectedSheet.name]?.second ?: return
+
+            val editSheet = cloneDatasheet(newSheet)
+            val mutable = editSheet.statTable.weapons.toMutableList()
+            mutable.removeAt(index)
+            editSheet.statTable.weapons = mutable.toTypedArray()
+
+            edits[selectedSheet.name] = Pair(true, editSheet)
+
+            state.copy(sheetEdits = edits)
+        }
+    }
+
+    private fun editSheetValue(editFunc: (Datasheet) -> Unit) {
+        _uiState.update { state ->
+            val edits = state.sheetEdits.toMutableMap()
+            val selectedSheet = state.datasheets[state.selectedSheet]
+            val newSheet = edits[selectedSheet.name]?.second ?: return
             val editSheet = cloneDatasheet(newSheet)
 
             editFunc(editSheet)

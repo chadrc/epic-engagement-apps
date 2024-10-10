@@ -2,6 +2,7 @@ package com.yulepanda.wargamebuilder
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,10 +12,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.rounded.Add
@@ -121,12 +125,13 @@ fun App(model: AppViewModel = AppViewModel()) {
                                 modifier = Modifier.fillMaxWidth()
                                     .fillMaxHeight(.9f)
                             ) {
-                                Column {
+                                Column(modifier = Modifier
+                                    .verticalScroll(rememberScrollState())) {
                                     if (editSheet == null) {
                                         // sheet preview
                                         Text("Select a datasheet")
                                     } else {
-                                        EditSheet(model, editSheet)
+                                        EditSheet(model, state, editSheet)
                                     }
                                 }
                             }
@@ -170,7 +175,7 @@ fun App(model: AppViewModel = AppViewModel()) {
 }
 
 @Composable
-fun EditSheet(model: AppViewModel, sheet: Datasheet) {
+fun EditSheet(model: AppViewModel, state: AppState, sheet: Datasheet) {
     TextField(
         sheet.name,
         singleLine = true,
@@ -180,7 +185,7 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
     )
     Row {
         TextField(
-            sheet.skill.toString(),
+            toStringPositiveOrEmpty(sheet.skill),
             singleLine = true,
             label = { Text("Skill") },
             modifier = Modifier.fillMaxWidth(.34f),
@@ -192,7 +197,7 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
             },
         )
         TextField(
-            sheet.health.toString(),
+            toStringPositiveOrEmpty(sheet.health),
             singleLine = true,
             label = { Text("Health") },
             modifier = Modifier.fillMaxWidth(.5f),
@@ -204,7 +209,7 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
             },
         )
         TextField(
-            sheet.speed.toString(),
+            toStringPositiveOrEmpty(sheet.speed),
             singleLine = true,
             label = { Text("Speed") },
             modifier = Modifier.fillMaxWidth(),
@@ -218,56 +223,160 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
     }
     Row {
         Column(
-            modifier = Modifier.fillMaxWidth(.2f),
+            modifier = Modifier.width(state.tableRowHeight),
         ) {
-            StatTableHeaderRow("Result", MaterialTheme.colorScheme.onPrimary)
-            StatTableHeaderRow("To Save", MaterialTheme.colorScheme.onSecondary)
-            StatTableHeaderRow("To Resist", MaterialTheme.colorScheme.secondaryContainer)
-            StatTableHeaderRow("Hardness", MaterialTheme.colorScheme.onSecondary)
-            StatTableHeaderRow("Enhancements", MaterialTheme.colorScheme.secondaryContainer)
+            val baseRows = 5
+            val weaponRows = 6
+
+            Row(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .fillMaxWidth()
+                    .height(state.tableRowHeight)
+                    .clickable {
+                        model.addResult()
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.Rounded.Add,
+                    contentDescription = "Add Result",
+                    modifier = Modifier
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .fillMaxWidth()
+                    .height(state.tableRowHeight * baseRows),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {}
 
             for (i in IntRange(0, sheet.statTable.weapons.size - 1)) {
-                val weapon = sheet.statTable.weapons[i]
-                StatTableWeaponHeaderRow(weapon.name, MaterialTheme.colorScheme.surfaceContainerHighest) {
-                    model.setWeaponName(it, i)
+                Row(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .fillMaxWidth()
+                        .height(state.tableRowHeight * weaponRows)
+                        .clickable {
+                            model.removeWeapon(i)
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Rounded.Delete,
+                        contentDescription = "Delete Weapon",
+                        modifier = Modifier
+                    )
                 }
-                StatTableHeaderRow("Attacks", MaterialTheme.colorScheme.secondaryContainer)
-                StatTableHeaderRow("Range", MaterialTheme.colorScheme.onSecondary)
-                StatTableHeaderRow("To Hit", MaterialTheme.colorScheme.secondaryContainer)
-                StatTableHeaderRow("Damage", MaterialTheme.colorScheme.onSecondary)
-                StatTableHeaderRow("Enhancements", MaterialTheme.colorScheme.secondaryContainer)
+            }
+            Row(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .fillMaxWidth()
+                    .height(state.tableRowHeight)
+                    .clickable {
+                        model.addWeapon()
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.Rounded.Add,
+                    contentDescription = "Add Weapon",
+                    modifier = Modifier
+                )
             }
         }
 
+        // Row Headers
+        Column(
+            modifier = Modifier.fillMaxWidth(.2f),
+        ) {
+            EmptyTableRow(MaterialTheme.colorScheme.surfaceContainerHigh, state)
+            StatTableHeaderRow("Result", MaterialTheme.colorScheme.onPrimary, state)
+            StatTableHeaderRow("To Save", MaterialTheme.colorScheme.onSecondary, state)
+            StatTableHeaderRow("To Resist", MaterialTheme.colorScheme.secondaryContainer, state)
+            StatTableHeaderRow("Hardness", MaterialTheme.colorScheme.onSecondary, state)
+            StatTableHeaderRow("Enhancements", MaterialTheme.colorScheme.secondaryContainer, state)
+
+            for (i in IntRange(0, sheet.statTable.weapons.size - 1)) {
+                val weapon = sheet.statTable.weapons[i]
+                StatTableWeaponHeaderRow(weapon.name, MaterialTheme.colorScheme.surfaceContainerHighest, state) {
+                    model.setWeaponName(it, i)
+                }
+                StatTableHeaderRow("Attacks", MaterialTheme.colorScheme.secondaryContainer, state)
+                StatTableHeaderRow("Range", MaterialTheme.colorScheme.onSecondary, state)
+                StatTableHeaderRow("To Hit", MaterialTheme.colorScheme.secondaryContainer, state)
+                StatTableHeaderRow("Damage", MaterialTheme.colorScheme.onSecondary, state)
+                StatTableHeaderRow("Enhancements", MaterialTheme.colorScheme.secondaryContainer, state)
+            }
+        }
+
+        // Data Columns
         val parts = sheet.statTable.resultBreaks.size
+        val showResultDelete = parts > 1
         for (i in IntRange(0, parts - 1)) {
             val result = sheet.statTable.resultBreaks[i]
             val toSave = sheet.statTable.toSave[i]
-            val toResist = sheet.statTable.toResist?.get(i)
-            val hardness = sheet.statTable.hardness?.get(i)
-            val enhancements = sheet.statTable.enhancements?.get(i)
+            val toResist = sheet.statTable.toResist[i]
+            val hardness = sheet.statTable.hardness[i]
+            val enhancements = sheet.statTable.enhancements[i]
 
             Column(
-                modifier = Modifier.fillMaxWidth(1.0f / parts),
+                modifier = Modifier.fillMaxWidth(1.0f / (parts - i)),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                StatTableRow(result.toString(), MaterialTheme.colorScheme.onPrimary) {
+                if (showResultDelete) {
+                    Row(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .fillMaxWidth()
+                            .height(state.tableRowHeight)
+                            .clickable {
+                                model.removeResult(i)
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            Icons.Rounded.Delete,
+                            contentDescription = "Delete Result",
+                            modifier = Modifier
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .fillMaxWidth()
+                            .height(state.tableRowHeight),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) { }
+                }
+                StatTableRow(toStringPositiveOrEmpty(result), MaterialTheme.colorScheme.onPrimary, state) {
                     commitChangedInt(it) { num -> model.setResultBreak(num, i) }
                 }
-                StatTableRow(toSave.toString(), MaterialTheme.colorScheme.onSecondary) {
+                StatTableRow(toStringPositiveOrEmpty(toSave), MaterialTheme.colorScheme.onSecondary, state) {
                     commitChangedInt(it) { num -> model.setToSave(num, i) }
                 }
                 StatTableRow(
-                    toResist?.toString() ?: "",
-                    MaterialTheme.colorScheme.secondaryContainer
+                    toStringPositiveOrEmpty(toResist ?: 0),
+                    MaterialTheme.colorScheme.secondaryContainer,
+                    state
                 ) {
                     commitChangedInt(it) { num -> model.setToResist(num, i) }
                 }
-                StatTableRow(hardness?.toString() ?: "", MaterialTheme.colorScheme.onSecondary) {
+                StatTableRow(toStringPositiveOrEmpty(hardness ?: 0), MaterialTheme.colorScheme.onSecondary, state) {
                     commitChangedInt(it) { num -> model.setHardness(num, i) }
                 }
-                StatTableRow(enhancements.orEmpty(), MaterialTheme.colorScheme.secondaryContainer) {
+                StatTableRow(enhancements.orEmpty(), MaterialTheme.colorScheme.secondaryContainer, state) {
                     model.setEnhancements(it, i)
                 }
 
@@ -277,24 +386,25 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
                     val range = weapon.range[i]
                     val toHit = weapon.toHit[i]
                     val damage = weapon.damage[i]
-                    val weaponEnhancements = weapon.enhancements?.get(i)
+                    val weaponEnhancements = weapon.enhancements[i]
 
-                    EmptyTableRow(MaterialTheme.colorScheme.surfaceContainerHighest)
-                    StatTableRow(attacks.toString(), MaterialTheme.colorScheme.secondaryContainer) {
+                    EmptyTableRow(MaterialTheme.colorScheme.surfaceContainerHighest, state)
+                    StatTableRow(toStringPositiveOrEmpty(attacks), MaterialTheme.colorScheme.secondaryContainer, state) {
                         commitChangedInt(it) { num -> model.setAttacks(num, i, w) }
                     }
-                    StatTableRow(range.toString(), MaterialTheme.colorScheme.onSecondary) {
+                    StatTableRow(toStringPositiveOrEmpty(range), MaterialTheme.colorScheme.onSecondary, state) {
                         commitChangedInt(it) { num -> model.setRange(num, i, w) }
                     }
-                    StatTableRow(toHit.toString(), MaterialTheme.colorScheme.secondaryContainer) {
+                    StatTableRow(toStringPositiveOrEmpty(toHit), MaterialTheme.colorScheme.secondaryContainer, state) {
                         commitChangedInt(it) { num -> model.setToHit(num, i, w) }
                     }
-                    StatTableRow(damage.toString(), MaterialTheme.colorScheme.onSecondary) {
+                    StatTableRow(toStringPositiveOrEmpty(damage), MaterialTheme.colorScheme.onSecondary, state) {
                         commitChangedInt(it) { num -> model.setDamage(num, i, w) }
                     }
                     StatTableRow(
                         weaponEnhancements.orEmpty(),
-                        MaterialTheme.colorScheme.secondaryContainer
+                        MaterialTheme.colorScheme.secondaryContainer,
+                        state
                     ) {
                         model.setWeaponEnhancements(it, i, w)
                     }
@@ -305,12 +415,12 @@ fun EditSheet(model: AppViewModel, sheet: Datasheet) {
 }
 
 @Composable
-fun StatTableHeaderRow(text: String, color: Color) {
+fun StatTableHeaderRow(text: String, color: Color, state: AppState) {
     Row(
         modifier = Modifier
             .background(color)
             .fillMaxWidth()
-            .height(32.dp)
+            .height(state.tableRowHeight)
             .padding(6.dp, 3.dp)
     ) { Text(text) }
 }
@@ -319,13 +429,14 @@ fun StatTableHeaderRow(text: String, color: Color) {
 fun StatTableWeaponHeaderRow(
     text: String,
     color: Color,
+    state: AppState,
     onValueChange: (String) -> Unit = {},
 ) {
     Row(
         modifier = Modifier
             .background(color)
             .fillMaxWidth()
-            .height(32.dp)
+            .height(state.tableRowHeight)
             .padding(6.dp, 3.dp)
     ) {
         BasicTextField(
@@ -342,12 +453,12 @@ fun StatTableWeaponHeaderRow(
 }
 
 @Composable
-fun EmptyTableRow(color: Color) {
+fun EmptyTableRow(color: Color, state: AppState) {
     Row(
         modifier = Modifier
             .background(color)
             .fillMaxWidth()
-            .height(32.dp)
+            .height(state.tableRowHeight)
             .padding(6.dp, 3.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -357,14 +468,14 @@ fun EmptyTableRow(color: Color) {
 @Composable
 fun StatTableRow(
     text: String,
-    color: Color,
+    color: Color, state: AppState,
     onValueChange: (String) -> Unit = {},
 ) {
     Row(
         modifier = Modifier
             .background(color)
             .fillMaxWidth()
-            .height(32.dp)
+            .height(state.tableRowHeight)
             .padding(6.dp, 3.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -393,4 +504,8 @@ fun parseChangedInt(change: String): Int? {
     } else {
         change.toIntOrNull()
     }
+}
+
+fun toStringPositiveOrEmpty(value: Int): String {
+    return if (value > 0) value.toString() else ""
 }
