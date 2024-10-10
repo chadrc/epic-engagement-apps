@@ -9,15 +9,9 @@ data class Datasheet(
     var health: Int = 0,
     var speed: Int = 0,
     var modelCount: Int = 0,
-    var abilities: Array<UnitAbility> = emptyArray(),
+    var abilities: String = "",
     var statTable: RollTable = RollTable(),
     var tags: Array<String> = emptyArray()
-)
-
-@Serializable
-data class UnitAbility(
-    var name: String = "",
-    var description: String? = null
 )
 
 @Serializable

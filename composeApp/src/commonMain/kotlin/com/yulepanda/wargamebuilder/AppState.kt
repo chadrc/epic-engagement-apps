@@ -14,7 +14,8 @@ data class AppState(
     val newSheetName: String = "",
     val sheetEdits: Map<String, Pair<Boolean, Datasheet>> = mapOf(),
     val tableRowHeight: Dp = 32.dp,
-    val showingAbilities: Boolean = false
+    val showingAbilities: Boolean = false,
+    val currentTag: String = ""
 )
 
 class AppViewModel : ViewModel() {
@@ -158,6 +159,36 @@ class AppViewModel : ViewModel() {
             // show error
         } else {
             editSheetValue { it.modelCount = value }
+        }
+    }
+
+    fun setAbilities(value: String) {
+        editSheetValue { it.abilities = value }
+    }
+
+    fun setCurrentTag(value: String) {
+        _uiState.update { it.copy(currentTag = value) }
+    }
+
+    fun addTag() {
+        if (uiState.value.currentTag.isBlank()) {
+            return
+        }
+
+        editSheetValue { sheet ->
+            val tags = sheet.tags.toMutableList()
+            tags.add(uiState.value.currentTag)
+            sheet.tags = tags.toTypedArray()
+        }
+
+        _uiState.update { it.copy(currentTag = "") }
+    }
+
+    fun removeTag(index: Int) {
+        editSheetValue { sheet ->
+            val tags = sheet.tags.toMutableList()
+            tags.removeAt(index)
+            sheet.tags = tags.toTypedArray()
         }
     }
 
@@ -343,7 +374,6 @@ class AppViewModel : ViewModel() {
 
     private fun cloneDatasheet(datasheet: Datasheet): Datasheet {
         return datasheet.copy(
-            abilities = datasheet.abilities.map { it.copy() }.toTypedArray(),
             statTable = datasheet.statTable.copy(
                 datasheet.statTable.resultBreaks.copyOf(),
                 datasheet.statTable.toSave.copyOf(),
