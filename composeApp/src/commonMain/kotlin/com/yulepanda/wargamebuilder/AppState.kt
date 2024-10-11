@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class AppState(
+    val catalogs: MutableList<DatasheetCatalog> = mutableListOf(DatasheetCatalog("Default")),
+    val selectedCatalog: Int = 0,
     val datasheets: List<Datasheet> = listOf(Datasheet()),
     val selectedSheet: Int = 0,
     val newSheetName: String = "",
@@ -21,6 +23,78 @@ data class AppState(
 class AppViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(AppState())
     val uiState: StateFlow<AppState> = _uiState.asStateFlow()
+
+    fun loadAllSheets() {
+        _uiState.update { state ->
+            val catalogs = getDatasheetCatalogs().toMutableList()
+            var sheets = getDatasheets()
+            val defaultCatalog = DatasheetCatalog("Default", sheets = sheets.toMutableList())
+
+            catalogs.add(0, defaultCatalog)
+
+            if (sheets.isEmpty()) {
+                sheets = listOf(Datasheet())
+            }
+            state.copy(
+                datasheets = sheets,
+                catalogs = catalogs
+            )
+        }
+
+        setSelected(uiState.value.selectedSheet)
+    }
+
+    fun addCatalog(name: String) {
+        _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val catalog = DatasheetCatalog(name)
+
+            saveDatasheetCatalog(name, catalog)
+            catalogs.add(DatasheetCatalog(name))
+
+            state.copy(catalogs = catalogs)
+        }
+    }
+
+    fun removeCatalog() {
+        if (uiState.value.selectedCatalog >= uiState.value.catalogs.size) {
+            return
+        }
+
+        _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val removed = catalogs.removeAt(state.selectedCatalog)
+            deleteDatasheetCatalog(removed.name)
+
+            var newSelected = state.selectedCatalog
+            if (newSelected >= catalogs.size) {
+                newSelected = catalogs.size - 1
+            }
+
+            state.copy(catalogs = catalogs, selectedCatalog = newSelected)
+        }
+    }
+
+    fun renameCatalog(name: String) {
+        if (uiState.value.selectedCatalog >= uiState.value.catalogs.size) {
+            return
+        }
+
+        _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val current = catalogs[state.selectedCatalog]
+            val new = DatasheetCatalog(name)
+            new.sheets = current.sheets
+            catalogs[state.selectedCatalog] = new
+            state.copy(catalogs = catalogs)
+        }
+    }
+
+    fun setSelectedCatalog(index: Int) {
+        if (index >= uiState.value.catalogs.size) return
+
+        _uiState.update { it.copy(selectedCatalog = index) }
+    }
 
     fun addNewSheet() {
         if (uiState.value.newSheetName.isBlank()) {
@@ -54,18 +128,6 @@ class AppViewModel : ViewModel() {
         } else {
             // error
         }
-    }
-
-    fun loadAllSheets() {
-        _uiState.update { state ->
-            var sheets = getDatasheets()
-            if (sheets.isEmpty()) {
-                sheets = listOf(Datasheet())
-            }
-            state.copy(datasheets = sheets)
-        }
-
-        setSelected(uiState.value.selectedSheet)
     }
 
     fun toggleShowAbilities() {

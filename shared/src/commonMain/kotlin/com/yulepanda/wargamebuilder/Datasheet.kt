@@ -3,6 +3,12 @@ package com.yulepanda.wargamebuilder
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class DatasheetCatalog(
+    var name: String,
+    var sheets: MutableList<Datasheet> = mutableListOf()
+)
+
+@Serializable
 data class Datasheet(
     var name: String = "New Datasheet",
     var skill: Int = 0,
