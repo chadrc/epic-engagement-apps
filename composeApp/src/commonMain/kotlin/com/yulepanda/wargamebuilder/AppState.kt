@@ -115,7 +115,19 @@ class AppViewModel : ViewModel() {
                 val newIndex = sheets.size
 
                 edits[datasheet.name] = Pair(false, datasheet)
-                sheets.add(datasheet)
+
+                // insert in alphabetical order
+                if (sheets.size == 0) {
+                    sheets.add(datasheet)
+                } else {
+                    val neighbor = sheets.mapIndexed({i, v -> Pair(i, v)}).find { pair -> datasheet.name < pair.second.name }
+                    if (neighbor != null) {
+                        val index = neighbor.first
+                        sheets.add(index, datasheet)
+                    } else {
+                        sheets.add(datasheet)
+                    }
+                }
 
                 catalog.datasheets = sheets
                 catalogs[state.selectedCatalog] = catalog

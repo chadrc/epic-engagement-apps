@@ -82,10 +82,7 @@ fun App(model: AppViewModel = AppViewModel()) {
                                 modifier = Modifier
                                     .verticalScroll(rememberScrollState())
                             ) {
-                                if (editSheet == null) {
-                                    // sheet preview
-                                    Text("Select a datasheet")
-                                } else {
+                                if (editSheet != null) {
                                     SheetEditor(model, state, editSheet)
                                 }
                             }
