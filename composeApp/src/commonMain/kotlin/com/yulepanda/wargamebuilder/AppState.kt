@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class AppState(
-    val catalogs: MutableList<DatasheetCatalog> = mutableListOf(DatasheetCatalog("Init")),
+    val catalogs: List<DatasheetCatalog> = listOf(DatasheetCatalog("Init")),
     val selectedCatalog: Int = 0,
 //    val datasheets: List<Datasheet> = listOf(Datasheet()),
     val selectedSheet: Int = 0,
@@ -28,10 +28,15 @@ class AppViewModel : ViewModel() {
         _uiState.update { state ->
             val catalogs = getDatasheetCatalogs().toMutableList()
 
-            if (catalogs.find { it.name == "Default" } == null) {
+            // put default first
+            val index = catalogs.findIndex { it.name == "Default" }
+            if (index == null) {
                 val defaultCatalog = DatasheetCatalog("Default")
                 saveDatasheetCatalog("Default", defaultCatalog)
                 catalogs.add(0, defaultCatalog)
+            } else {
+                val default = catalogs.removeAt(index)
+                catalogs.add(0, default)
             }
 
             state.copy(

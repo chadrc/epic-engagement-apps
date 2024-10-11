@@ -9,3 +9,9 @@ inline fun <reified T> Array<T>.pluck(index: Int): Array<T> {
     new.removeAt(index)
     return new.toTypedArray()
 }
+
+inline fun <reified T> Iterable<T>.findIndex(predicate: (T) -> Boolean): Int? {
+    return this.mapIndexed {i, v -> Pair(i, v)}
+        .find { pair -> predicate(pair.second) }
+        ?.first
+}
