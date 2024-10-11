@@ -21,7 +21,6 @@ fun StatisticsPanel(
         Text("Statistics")
 
         if (sheet == null) {
-            Text("Statistics")
             return
         }
 

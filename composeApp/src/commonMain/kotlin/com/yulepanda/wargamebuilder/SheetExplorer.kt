@@ -41,7 +41,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SheetExplorer(state: AppState, model: AppViewModel) {
+fun SheetExplorer(
+    catalog: DatasheetCatalog,
+    state: AppState,
+    model: AppViewModel
+) {
     var addCatalogDialogOpen by remember { mutableStateOf(false) }
     var renameCatalogDialogOpen by remember { mutableStateOf(false) }
 
@@ -152,7 +156,7 @@ fun SheetExplorer(state: AppState, model: AppViewModel) {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        itemsIndexed(state.datasheets) { index, datasheet ->
+        itemsIndexed(catalog.datasheets) { index, datasheet ->
             val isSelected = state.selectedSheet == index
             val color = if (isSelected) MaterialTheme.colorScheme.onPrimary
             else MaterialTheme.colorScheme.surfaceContainer
@@ -160,7 +164,7 @@ fun SheetExplorer(state: AppState, model: AppViewModel) {
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .background(color)
-                .clickable { model.setSelected(index) }
+                .clickable { model.setSelectedSheet(index) }
             ) {
                 Text(
                     datasheet.name,

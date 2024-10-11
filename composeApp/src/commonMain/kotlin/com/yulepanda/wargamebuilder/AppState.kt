@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class AppState(
-    val catalogs: MutableList<DatasheetCatalog> = mutableListOf(DatasheetCatalog("Default")),
+    val catalogs: MutableList<DatasheetCatalog> = mutableListOf(DatasheetCatalog("Init")),
     val selectedCatalog: Int = 0,
-    val datasheets: List<Datasheet> = listOf(Datasheet()),
+//    val datasheets: List<Datasheet> = listOf(Datasheet()),
     val selectedSheet: Int = 0,
     val newSheetName: String = "",
     val sheetEdits: Map<String, Pair<Boolean, Datasheet>> = mapOf(),
@@ -27,21 +27,19 @@ class AppViewModel : ViewModel() {
     fun loadAllSheets() {
         _uiState.update { state ->
             val catalogs = getDatasheetCatalogs().toMutableList()
-            var sheets = getDatasheets()
-            val defaultCatalog = DatasheetCatalog("Default", sheets = sheets.toMutableList())
 
-            catalogs.add(0, defaultCatalog)
-
-            if (sheets.isEmpty()) {
-                sheets = listOf(Datasheet())
+            if (catalogs.find { it.name == "Default" } == null) {
+                val defaultCatalog = DatasheetCatalog("Default")
+                saveDatasheetCatalog("Default", defaultCatalog)
+                catalogs.add(0, defaultCatalog)
             }
+
             state.copy(
-                datasheets = sheets,
                 catalogs = catalogs
             )
         }
 
-        setSelected(uiState.value.selectedSheet)
+        setSelectedSheet(uiState.value.selectedSheet)
     }
 
     fun addCatalog(name: String) {
@@ -82,10 +80,13 @@ class AppViewModel : ViewModel() {
 
         _uiState.update { state ->
             val catalogs = state.catalogs.toMutableList()
-            val current = catalogs[state.selectedCatalog]
+            val catalog = catalogs[state.selectedCatalog]
             val new = DatasheetCatalog(name)
-            new.sheets = current.sheets
+            new.datasheets = catalog.datasheets
             catalogs[state.selectedCatalog] = new
+
+            saveDatasheetCatalog(catalog.name, catalog)
+
             state.copy(catalogs = catalogs)
         }
     }
@@ -101,28 +102,31 @@ class AppViewModel : ViewModel() {
             // error
             return
         }
-        val existing = uiState.value.datasheets.find { it.name == uiState.value.newSheetName }
 
-        if (existing == null) {
-            _uiState.update { s ->
-                val sheets = s.datasheets.toMutableList()
-                val edits = s.sheetEdits.toMutableMap()
+        if (!currentCatalogHasName(uiState.value.newSheetName)) {
+            _uiState.update { state ->
+                val catalogs = state.catalogs.toMutableList()
+                val catalog = catalogs[uiState.value.selectedCatalog].copy()
+                val sheets = catalog.datasheets.toMutableList()
+                val edits = state.sheetEdits.toMutableMap()
                 val datasheet = Datasheet()
                 datasheet.name = uiState.value.newSheetName
-
-                val path = "${datasheet.name}.json"
-                saveDatasheet(path, datasheet)
 
                 val newIndex = sheets.size
 
                 edits[datasheet.name] = Pair(false, datasheet)
                 sheets.add(datasheet)
 
-                s.copy(
-                    datasheets = sheets,
+                catalog.datasheets = sheets
+                catalogs[state.selectedCatalog] = catalog
+
+                saveDatasheetCatalog(catalog.name, catalog)
+
+                state.copy(
                     newSheetName = "",
                     selectedSheet = newIndex,
                     sheetEdits = edits,
+                    catalogs = catalogs
                 )
             }
         } else {
@@ -141,65 +145,79 @@ class AppViewModel : ViewModel() {
     }
 
     fun deleteSelectedSheet() {
-        if (_uiState.value.selectedSheet < _uiState.value.datasheets.size) {
-            _uiState.update { state ->
-                val sheets = state.datasheets.toMutableList()
-                val edits = state.sheetEdits.toMutableMap()
-                val removed = sheets.removeAt(_uiState.value.selectedSheet)
+        _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val catalog = catalogs[uiState.value.selectedCatalog].copy()
+            val sheets = catalog.datasheets.toMutableList()
+            val edits = state.sheetEdits.toMutableMap()
+            sheets.removeAt(_uiState.value.selectedSheet)
 
-                val selected = if (_uiState.value.selectedSheet >= sheets.size) {
-                    sheets.size - 1
-                } else {
-                    _uiState.value.selectedSheet
-                }
-
-                if (selected >= 0 && !edits.containsKey(sheets[selected].name)) {
-                    edits[sheets[selected].name] = Pair(false, cloneDatasheet(sheets[selected]))
-                }
-
-                val path = "${removed.name}.json"
-                deleteDatasheetFile(path)
-
-                state.copy(
-                    datasheets = sheets,
-                    selectedSheet = selected,
-                    sheetEdits = edits
-                )
+            val selected = if (_uiState.value.selectedSheet >= sheets.size) {
+                sheets.size - 1
+            } else {
+                _uiState.value.selectedSheet
             }
+
+            if (selected >= 0 && !edits.containsKey(sheets[selected].name)) {
+                edits[sheets[selected].name] = Pair(false, cloneDatasheet(sheets[selected]))
+            }
+
+            catalog.datasheets = sheets
+            catalogs[state.selectedCatalog] = catalog
+
+            saveDatasheetCatalog(catalog.name, catalog)
+
+            state.copy(
+                selectedSheet = selected,
+                sheetEdits = edits,
+                catalogs = catalogs
+            )
         }
     }
 
     fun saveSelectedSheet() {
-        if (_uiState.value.selectedSheet < _uiState.value.datasheets.size) {
-            _uiState.update { state ->
-                val sheets = state.datasheets.toMutableList()
-                val edits = state.sheetEdits.toMutableMap()
-                val selectedSheet = state.datasheets[state.selectedSheet]
-                val oldName = selectedSheet.name
-                val editSheet = edits[selectedSheet.name]?.second?.copy() ?: return
-                sheets[state.selectedSheet] = editSheet
+        _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val catalog = catalogs[uiState.value.selectedCatalog].copy()
+            val sheets = catalog.datasheets.toMutableList()
+            val edits = state.sheetEdits.toMutableMap()
+            val selectedSheet = catalog.datasheets[state.selectedSheet]
+            val oldName = selectedSheet.name
+            val editSheet = edits[selectedSheet.name]?.second?.copy() ?: return
+            sheets[state.selectedSheet] = editSheet
 
-                // delete first in case of name change
-                deleteDatasheetFile("${oldName}.json")
-                saveDatasheet("${editSheet.name}.json", editSheet)
+            catalog.datasheets = sheets
 
-                edits.remove(oldName)
-                edits[editSheet.name] = Pair(false, sheets[state.selectedSheet])
+            edits.remove(oldName)
+            edits[editSheet.name] = Pair(false, sheets[state.selectedSheet])
 
-                state.copy(datasheets = sheets, sheetEdits = edits)
-            }
+            catalogs[state.selectedCatalog] = catalog
+
+            saveDatasheetCatalog(catalog.name, catalog)
+
+            state.copy(catalogs = catalogs, sheetEdits = edits)
         }
     }
 
-    fun setSelected(index: Int) {
+    fun setSelectedSheet(index: Int) {
         _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val catalog = catalogs[uiState.value.selectedCatalog].copy()
+            if (catalog.datasheets.getOrNull(index) == null) {
+                return
+            }
+
             val edits = state.sheetEdits.toMutableMap()
-            val selectedSheet = state.datasheets[index]
+            val selectedSheet = catalog.datasheets[index]
             if (!edits.containsKey(selectedSheet.name)) {
                 edits[selectedSheet.name] = Pair(false, selectedSheet.copy())
             }
 
-            state.copy(selectedSheet = index, sheetEdits = edits)
+            state.copy(
+                catalogs = catalogs,
+                selectedSheet = index,
+                sheetEdits = edits
+            )
         }
     }
 
@@ -337,8 +355,10 @@ class AppViewModel : ViewModel() {
 
     fun addResult() {
         _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val catalog = catalogs[uiState.value.selectedCatalog].copy()
             val edits = state.sheetEdits.toMutableMap()
-            val selectedSheet = state.datasheets[state.selectedSheet]
+            val selectedSheet = catalog.datasheets[state.selectedSheet]
             val newSheet = edits[selectedSheet.name]?.second ?: return
 
             val editSheet = cloneDatasheet(newSheet)
@@ -365,8 +385,10 @@ class AppViewModel : ViewModel() {
 
     fun removeResult(index: Int) {
         _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val catalog = catalogs[uiState.value.selectedCatalog].copy()
             val edits = state.sheetEdits.toMutableMap()
-            val selectedSheet = state.datasheets[state.selectedSheet]
+            val selectedSheet = catalog.datasheets[state.selectedSheet]
             val newSheet = edits[selectedSheet.name]?.second ?: return
 
             val editSheet = cloneDatasheet(newSheet)
@@ -393,8 +415,10 @@ class AppViewModel : ViewModel() {
 
     fun addWeapon() {
         _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val catalog = catalogs[uiState.value.selectedCatalog].copy()
             val edits = state.sheetEdits.toMutableMap()
-            val selectedSheet = state.datasheets[state.selectedSheet]
+            val selectedSheet = catalog.datasheets[state.selectedSheet]
             val newSheet = edits[selectedSheet.name]?.second ?: return
 
             val editSheet = cloneDatasheet(newSheet)
@@ -420,8 +444,10 @@ class AppViewModel : ViewModel() {
 
     fun removeWeapon(index: Int) {
         _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val catalog = catalogs[uiState.value.selectedCatalog].copy()
             val edits = state.sheetEdits.toMutableMap()
-            val selectedSheet = state.datasheets[state.selectedSheet]
+            val selectedSheet = catalog.datasheets[state.selectedSheet]
             val newSheet = edits[selectedSheet.name]?.second ?: return
 
             val editSheet = cloneDatasheet(newSheet)
@@ -437,8 +463,10 @@ class AppViewModel : ViewModel() {
 
     private fun editSheetValue(editFunc: (Datasheet) -> Unit) {
         _uiState.update { state ->
+            val catalogs = state.catalogs.toMutableList()
+            val catalog = catalogs[uiState.value.selectedCatalog].copy()
             val edits = state.sheetEdits.toMutableMap()
-            val selectedSheet = state.datasheets[state.selectedSheet]
+            val selectedSheet = catalog.datasheets[state.selectedSheet]
             val newSheet = edits[selectedSheet.name]?.second ?: return
             val editSheet = cloneDatasheet(newSheet)
 
@@ -469,5 +497,10 @@ class AppViewModel : ViewModel() {
             ),
             tags = datasheet.tags.copyOf()
         )
+    }
+
+    private fun currentCatalogHasName(name: String): Boolean {
+        val catalog = uiState.value.catalogs[uiState.value.selectedCatalog]
+        return catalog.datasheets.find { it.name == name } != null
     }
 }

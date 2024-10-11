@@ -37,8 +37,12 @@ fun App(model: AppViewModel = AppViewModel()) {
     ) {
         val state by model.uiState.collectAsState()
 
-        val editSheet = if (state.selectedSheet < state.datasheets.size) {
-            val sheet = state.datasheets[state.selectedSheet]
+        val currentCatalog = state.catalogs[state.selectedCatalog]
+        val editSheet = if (
+            state.selectedSheet >= 0 &&
+            state.selectedSheet < currentCatalog.datasheets.size
+        ) {
+            val sheet = currentCatalog.datasheets[state.selectedSheet]
             state.sheetEdits[sheet.name]?.second
         } else {
             null
@@ -56,7 +60,7 @@ fun App(model: AppViewModel = AppViewModel()) {
                         .fillMaxWidth(.25f)
                         .padding(5.dp)
                 ) {
-                    SheetExplorer(state, model)
+                    SheetExplorer(currentCatalog, state, model)
                 }
 
                 Column(

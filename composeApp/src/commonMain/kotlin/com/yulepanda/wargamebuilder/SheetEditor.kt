@@ -49,7 +49,7 @@ fun SheetEditor(model: AppViewModel, state: AppState, sheet: Datasheet) {
     )
     Row {
         TextField(
-            toStringPositiveOrEmpty(sheet.modelCount),
+            sheet.modelCount.toString(),
             singleLine = true,
             label = { Text("Model Count") },
             modifier = Modifier.fillMaxWidthPart(4),
@@ -61,7 +61,7 @@ fun SheetEditor(model: AppViewModel, state: AppState, sheet: Datasheet) {
             },
         )
         TextField(
-            toStringPositiveOrEmpty(sheet.skill),
+            sheet.skill.toString(),
             singleLine = true,
             label = { Text("Skill") },
             modifier = Modifier.fillMaxWidthPart(3),
@@ -73,7 +73,7 @@ fun SheetEditor(model: AppViewModel, state: AppState, sheet: Datasheet) {
             },
         )
         TextField(
-            toStringPositiveOrEmpty(sheet.health),
+            sheet.health.toString(),
             singleLine = true,
             label = { Text("Health") },
             modifier = Modifier.fillMaxWidthPart(2),
@@ -85,7 +85,7 @@ fun SheetEditor(model: AppViewModel, state: AppState, sheet: Datasheet) {
             },
         )
         TextField(
-            toStringPositiveOrEmpty(sheet.speed),
+            sheet.speed.toString(),
             singleLine = true,
             label = { Text("Speed") },
             modifier = Modifier.fillMaxWidth(),
