@@ -99,6 +99,8 @@ class AppViewModel : ViewModel() {
         if (index >= uiState.value.catalogs.size) return
 
         _uiState.update { it.copy(selectedCatalog = index) }
+
+        setSelectedSheet(0)
     }
 
     fun addNewSheet() {
