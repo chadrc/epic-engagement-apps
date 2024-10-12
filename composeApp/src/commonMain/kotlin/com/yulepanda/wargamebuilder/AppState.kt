@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.update
 data class AppState(
     val catalogs: List<DatasheetCatalog> = listOf(DatasheetCatalog("Init")),
     val selectedCatalog: Int = 0,
-//    val datasheets: List<Datasheet> = listOf(Datasheet()),
     val selectedSheet: Int = 0,
     val newSheetName: String = "",
     val sheetEdits: Map<String, Pair<Boolean, Datasheet>> = mapOf(),
@@ -125,7 +124,7 @@ class AppViewModel : ViewModel() {
                 if (sheets.size == 0) {
                     sheets.add(datasheet)
                 } else {
-                    val neighbor = sheets.mapIndexed({i, v -> Pair(i, v)}).find { pair -> datasheet.name < pair.second.name }
+                    val neighbor = sheets.mapIndexed { i, v -> Pair(i, v) }.find { pair -> datasheet.name < pair.second.name }
                     if (neighbor != null) {
                         val index = neighbor.first
                         sheets.add(index, datasheet)
