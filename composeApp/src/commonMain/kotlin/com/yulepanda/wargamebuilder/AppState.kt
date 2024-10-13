@@ -126,7 +126,8 @@ class AppViewModel : ViewModel() {
                 if (sheets.size == 0) {
                     sheets.add(datasheet)
                 } else {
-                    val neighbor = sheets.mapIndexed { i, v -> Pair(i, v) }.find { pair -> datasheet.name < pair.second.name }
+                    val neighbor = sheets.mapIndexed { i, v -> Pair(i, v) }
+                        .find { pair -> datasheet.name < pair.second.name }
                     if (neighbor != null) {
                         val index = neighbor.first
                         sheets.add(index, datasheet)
@@ -441,7 +442,13 @@ class AppViewModel : ViewModel() {
 
             val editSheet = cloneDatasheet(newSheet)
 
-            val weapon = WeaponTable()
+            val weapon = WeaponTable(
+                attacks = arrayOf(1),
+                range = arrayOf(10),
+                toHit = arrayOf(4),
+                damage = arrayOf(1),
+                enhancements = arrayOf(null)
+            )
             val additionColumns = editSheet.statTable.resultBreaks.size - 1
 
             for (i in IntRange(0, additionColumns - 1)) {
