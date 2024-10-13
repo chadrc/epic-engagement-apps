@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
@@ -158,13 +159,15 @@ fun SheetExplorer(
     ) {
         itemsIndexed(catalog.datasheets) { index, datasheet ->
             val isSelected = state.selectedSheet == index
+            val hasEdits = state.sheetEdits[datasheet.name]?.first ?: false
             val color = if (isSelected) MaterialTheme.colorScheme.onPrimary
             else MaterialTheme.colorScheme.surfaceContainer
 
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .background(color)
-                .clickable { model.setSelectedSheet(index) }
+                .clickable { model.setSelectedSheet(index) },
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     datasheet.name,
@@ -172,6 +175,16 @@ fun SheetExplorer(
                     modifier = Modifier
                         .padding(6.dp, 3.dp)
                 )
+
+                if (hasEdits) {
+                    Icon(
+                        Icons.Default.Warning,
+                        contentDescription = "Unsaved data",
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                        modifier = Modifier
+                            .padding(6.dp, 3.dp)
+                    )
+                }
             }
         }
     }
